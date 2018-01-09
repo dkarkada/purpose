@@ -11,14 +11,13 @@ var DELAY = 0.01;
 CATGIFS="https://www.twitter.com"
 var urls = ['twitter.com'];
 
-console.log("ASD");
 /*
 Restart alarm for the currently active tab, whenever background.js is run.
 */
 var gettingActiveTab = browser.tabs.query({active: true, currentWindow: true});
 gettingActiveTab.then((tabs) => {
   restartAlarm(tabs[0].id);
-  console.log("ASD");
+  console.log(tabs[0].url); 
   var rootURL = new URL(tabs[0].url)
   console.log(rootURL.hostname);
   if (urls.includes(rootURL.hostname)){
@@ -52,12 +51,15 @@ Restart alarm for the currently active tab, whenever a new tab becomes active.
 */
 browser.tabs.onActivated.addListener((activeInfo) => {
   restartAlarm(activeInfo.tabId);
-  console.log("ASD");
-  var rootURL = new URL(tabs[0].url)
-  console.log(rootURL.hostname);
-  if (urls.includes(rootURL.hostname)){
-    console.log("MEME");
-  }
+  var gettingActiveTab = browser.tabs.query({active: true, currentWindow: true});
+  gettingActiveTab.then((tabs) => {
+    console.log(tabs[0].url); 
+    var rootURL = new URL(tabs[0].url)
+    console.log(rootURL.hostname);
+    if (urls.includes(rootURL.hostname)){
+      console.log("MEME");
+    }
+  });
 });
 
 /*
