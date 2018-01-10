@@ -1,21 +1,25 @@
 {
   "manifest_version": 2,
-  "name": "chillout-page-action",
+  "name": "purpose",
   "version": "1.0",
-  "description": "Show a page action after a period of inactivity. Show cat gifs when the page action is clicked.",
-  "homepage_url": "https://github.com/mdn/webextensions-examples/tree/master/chill-out", //WRONG
+  "description": "Stay focused by being reminded of your purpose on certain websites.",
+  "homepage_url": "https://github.com/dkarkada/purpose",
   "icons": {
     "48": "icons/chillout-48.png" //WRONG
   },
 
   "permissions": [
     "alarms", //WRONG
-    "tabs"
+    "tabs",
+    "<all_urls>"
   ],
 
-  "page_action": {
-    "default_icon": "icons/chillout-32.png", //WRONG
+  "page_action": { //WRONG
+    "default_icon": "icons/chillout-32.png",
     "default_title": "Chill out"
+  },
+  "browser_action": {
+      "default_title": "Click Me"
   },
 
   "background": {
