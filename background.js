@@ -9,7 +9,7 @@ a minute.
 */ 
 var DELAY = 0.01;
 CATGIFS="https://www.twitter.com"
-var urls = ['twitter.com'];
+var urls = ['twitter.com', 'spider.seds.org'];
 
 /*
 Restart alarm for the currently active tab, whenever background.js is run.
@@ -20,7 +20,7 @@ gettingActiveTab.then((tabs) => {
 });
 
 
-askPurpose();
+checkLegality();
 
 
 /*
@@ -28,10 +28,10 @@ Restart alarm for the currently active tab, whenever a new tab becomes active.
 */
 browser.tabs.onActivated.addListener((activeInfo) => {
 	restartAlarm(activeInfo.tabId);
-	askPurpose();
+	checkLegality();
 });
 
-function askPurpose(){
+function checkLegality(){
 	var gettingActiveTab = browser.tabs.query({active: true, currentWindow: true});
 	gettingActiveTab.then((tabs) => {
 		var rootURL = new URL(tabs[0].url)
