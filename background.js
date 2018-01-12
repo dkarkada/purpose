@@ -9,7 +9,7 @@ a minute.
 */ 
 var DELAY = 0.01;
 CATGIFS="https://www.twitter.com"
-var urls = ['twitter.com', 'spider.seds.org'];
+var urls = ['twitter.com', 'spider.seds.org', 'www.facebook.com'];
 
 /*
 Restart alarm for the currently active tab, whenever background.js is run.
@@ -36,7 +36,7 @@ function checkLegality(){
 	gettingActiveTab.then((tabs) => {
 		var rootURL = new URL(tabs[0].url)
 		if (urls.includes(rootURL.hostname)){
-			browser.tabs.executeScript({file: "alertCode.js"});
+			browser.tabs.executeScript({file: "injector.js"});
 		}
 	});
 }

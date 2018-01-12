@@ -1,6 +1,5 @@
 function CustomPrompt(){
 	this.render = function(dialog,func){
-		document.body.style.overflow = 'hidden';
 		var winW = window.innerWidth;
 	    var winH = window.innerHeight;
 	    var promptDiv = document.getElementById('promptDiv');
@@ -25,12 +24,6 @@ function CustomPrompt(){
 var Prompt = new CustomPrompt();
 
 if (document.getElementById("maskingDiv") == null){
-	var newDiv = document.createElement("div"); 
-	newDiv.id = "maskingDiv";
-	newDiv.style.cssText = 'display: block;opacity: .8;position: fixed;top: 0px;left: 0px;background: #FFF;\
-		width: 100%;height: 100%;z-index: 1000;';
-	document.getElementsByTagName('body')[0].appendChild(newDiv);
-
 	var promptDiv = document.createElement("div");
 	promptDiv.id = "promptDiv";
 	promptDiv.style.cssText = "display: block; position: fixed; background: #000;\
