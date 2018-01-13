@@ -36,7 +36,11 @@ function checkLegality(){
 	gettingActiveTab.then((tabs) => {
 		var rootURL = new URL(tabs[0].url)
 		if (urls.includes(rootURL.hostname)){
-			browser.tabs.executeScript({file: "injector.js"});
+			browser.tabs.executeScript({file: "jquery-3.2.1.min.js"}, function(){
+				browser.tabs.executeScript({file: "jquery-ui.min.js"}, function(){
+					browser.tabs.executeScript({file: "purposeDialog.js"})
+				})
+			});
 		}
 	});
 }
