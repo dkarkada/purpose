@@ -28,7 +28,7 @@
   },
 
   "web_accessible_resources": [
-    "alertCode.js"
+    "askPurpose.js"
   ]
 
 }
