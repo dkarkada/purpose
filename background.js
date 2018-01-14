@@ -11,6 +11,8 @@ var DELAY = 0.01;
 CATGIFS="https://www.twitter.com"
 var urls = ['twitter.com', 'spider.seds.org', 'www.facebook.com'];
 
+browser.storage.local.clear();
+
 /*
 Restart alarm for the currently active tab, whenever background.js is run.
 */
@@ -35,12 +37,21 @@ function checkLegality(){
 	var gettingActiveTab = browser.tabs.query({active: true, currentWindow: true});
 	gettingActiveTab.then((tabs) => {
 		var rootURL = new URL(tabs[0].url);
+		var host = rootURL.hostname;
 		if (urls.includes(rootURL.hostname)){
-			browser.tabs.executeScript({file: "jquery-3.2.1.min.js"}, function(){
-				browser.tabs.executeScript({file: "jquery-ui.min.js"}, function(){
-					console.log("AAAAA");
-					browser.tabs.executeScript({file: "askPurpose.js"});
-				});
+			var gettingItem = browser.storage.local.get([host]);
+			gettingItem.then((item)=> {
+				if(typeof item[host] === 'undefined'){
+					browser.tabs.executeScript({file: "jquery-3.2.1.min.js"}, function(){
+						browser.tabs.executeScript({file: "jquery-ui.min.js"}, function(){
+							browser.tabs.executeScript({file: "askPurpose.js"});
+						});
+					});
+				}
+				else {
+					console.log(item[host].time);
+					console.log(Math.floor(Date.now() / 1000));
+				}
 			});
 		}
 	});

@@ -56,12 +56,7 @@ if (document.getElementById("dialog-form") == null){
 				var time = Math.floor(Date.now() / 1000);
 				var host = window.location.hostname;
 			    var info = {time: time, purpose: purpose.val()};
-			    browser.storage.local.clear();	
 				browser.storage.local.set({[host]: info});
-
-				let gettingItem = browser.storage.local.get([host]);
-				gettingItem.then((item)=> {console.log(item)});
-				//console.log(info);
 				document.body.style.overflow = 'visible';
 				dialog.dialog( "close" );
 			}
