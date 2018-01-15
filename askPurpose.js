@@ -53,10 +53,10 @@ if (document.getElementById("dialog-form") == null){
 			var valid = checkLength( purpose, 40 );
  
 			if ( valid ) {
-				var time = Math.floor(Date.now() / 1000);
 				var host = window.location.hostname;
-			    var info = {time: time, purpose: purpose.val()};
-				browser.storage.local.set({[host]: info});
+				var time = Date.now();
+				var data = {purpose: purpose.val(), timeAsked: time, timeRemaining: 5000}
+				browser.storage.local.set({[host]: data});
 				document.body.style.overflow = 'visible';
 				dialog.dialog( "close" );
 			}

@@ -7,9 +7,12 @@ in the console, but the alarm will still go off after 6 seconds
 * if you package the extension and install it, then the alarm will go off after
 a minute.
 */ 
-var DELAY = 0.01;
+const DELAY = 0.01;
+const RENEWPURPOSE = 30;
 CATGIFS="https://www.twitter.com"
 var urls = ['twitter.com', 'spider.seds.org', 'www.facebook.com'];
+var timer;
+var curHost;
 
 browser.storage.local.clear();
 
@@ -19,42 +22,61 @@ Restart alarm for the currently active tab, whenever background.js is run.
 var gettingActiveTab = browser.tabs.query({active: true, currentWindow: true});
 gettingActiveTab.then((tabs) => {
 	restartAlarm(tabs[0].id);
+	checkLegality(tabs[0].id);
 });
 
 
-checkLegality();
+
 
 
 /*
 Restart alarm for the currently active tab, whenever a new tab becomes active.
 */
 browser.tabs.onActivated.addListener((activeInfo) => {
+	clearInterval(timer);
+	curHost = null;
 	restartAlarm(activeInfo.tabId);
-	checkLegality();
+	checkLegality(activeInfo.tabId);
 });
 
-function checkLegality(){
-	var gettingActiveTab = browser.tabs.query({active: true, currentWindow: true});
-	gettingActiveTab.then((tabs) => {
-		var rootURL = new URL(tabs[0].url);
-		var host = rootURL.hostname;
-		if (urls.includes(rootURL.hostname)){
-			var gettingItem = browser.storage.local.get([host]);
+function checkLegality(tabId){
+	var gettingActiveTab = browser.tabs.get(tabId);
+	gettingActiveTab.then((tab) => {
+		var rootURL = new URL(tab.url);
+		curHost = rootURL.hostname;
+		if (urls.includes(curHost)){
+			var gettingItem = browser.storage.local.get([curHost]);
 			gettingItem.then((item)=> {
-				if(typeof item[host] === 'undefined'){
-					browser.tabs.executeScript({file: "jquery-3.2.1.min.js"}, function(){
-						browser.tabs.executeScript({file: "jquery-ui.min.js"}, function(){
-							browser.tabs.executeScript({file: "askPurpose.js"});
-						});
-					});
+				var timeRemaining = 5000;
+				if(typeof item[curHost] === 'undefined'){
+					askPurpose();
 				}
 				else {
-					console.log(item[host].time);
-					console.log(Math.floor(Date.now() / 1000));
+					var lastTime = item[curHost].time;
+					var now = Date.now();
+					if ((now - lastTime)/1000 > RENEWPURPOSE){
+						askPurpose(tabId);
+					}
+					else {
+						timeRemaining = item[curHost].timeRemaining;
+					}
 				}
+				timer = setInterval(quizPurpose, timeRemaining);
 			});
 		}
 	});
+}
+
+function askPurpose(tabId){
+	browser.tabs.executeScript(tabId, {file: "jquery-3.2.1.min.js"}, function(){
+		browser.tabs.executeScript(tabId, {file: "jquery-ui.min.js"}, function(){
+			browser.tabs.executeScript(tabId, {file: "askPurpose.js"});
+		});
+	});
+}
+
+function quizPurpose(){
+	console.log('quiz');
 }
 
 /*
@@ -62,13 +84,11 @@ restartAlarm: clear all alarms,
 then set a new alarm for the given tab.
 */
 function restartAlarm(tabId) {
-	browser.pageAction.hide(tabId);
+	//browser.pageAction.hide(tabId);
 	browser.alarms.clearAll();
 	var gettingTab = browser.tabs.get(tabId);
 	gettingTab.then((tab) => {
-		if (tab.url != CATGIFS) {
-			browser.alarms.create("", {delayInMinutes: DELAY});
-		}
+		browser.alarms.create("", {delayInMinutes: DELAY});
 	});
 }
 
@@ -80,11 +100,4 @@ browser.alarms.onAlarm.addListener((alarm) => {
 	gettingActiveTab.then((tabs) => {
 		browser.pageAction.show(tabs[0].id);
 	});
-});
-
-/*
-On page action click, navigate the corresponding tab to the cat gifs.
-*/
-browser.pageAction.onClicked.addListener(() => {
-	browser.tabs.update({url: CATGIFS});
 });
