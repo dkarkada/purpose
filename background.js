@@ -7,35 +7,35 @@ in the console, but the alarm will still go off after 6 seconds
 * if you package the extension and install it, then the alarm will go off after
 a minute.
 */ 
-const DELAY = 0.01;
-const RENEWPURPOSE = 30;
-CATGIFS="https://www.twitter.com"
+const RENEWPURPOSE = 10000;
+const INTERVAL = 3000;
 var urls = ['twitter.com', 'spider.seds.org', 'www.facebook.com'];
-var timer;
+var timer, timer2;
 var curHost;
-
-browser.storage.local.clear();
+var siteData = {};
 
 /*
 Restart alarm for the currently active tab, whenever background.js is run.
 */
 var gettingActiveTab = browser.tabs.query({active: true, currentWindow: true});
 gettingActiveTab.then((tabs) => {
-	restartAlarm(tabs[0].id);
 	checkLegality(tabs[0].id);
+	var rootURL = new URL(tab.url);
+	curHost = rootURL.hostname;
 });
-
-
-
-
 
 /*
 Restart alarm for the currently active tab, whenever a new tab becomes active.
 */
 browser.tabs.onActivated.addListener((activeInfo) => {
 	clearInterval(timer);
-	curHost = null;
-	restartAlarm(activeInfo.tabId);
+	clearInterval(timer2);
+	if(typeof siteData[curHost] !== 'undefined'){
+		var data = siteData[curHost];
+		data.timeExited = Date.now();
+		data.timeRemaining = INTERVAL - (data.timeExited - data.timeStarted);
+		console.log(data.timeRemaining);
+	}
 	checkLegality(activeInfo.tabId);
 });
 
@@ -45,24 +45,18 @@ function checkLegality(tabId){
 		var rootURL = new URL(tab.url);
 		curHost = rootURL.hostname;
 		if (urls.includes(curHost)){
-			var gettingItem = browser.storage.local.get([curHost]);
-			gettingItem.then((item)=> {
-				var timeRemaining = 5000;
-				if(typeof item[curHost] === 'undefined'){
-					askPurpose();
+			var data = siteData[curHost];
+			if(typeof data === 'undefined'){
+				askPurpose();
+			}
+			else {
+				if ((Date.now() - data.timeExited) > RENEWPURPOSE){
+					askPurpose(tabId);
 				}
 				else {
-					var lastTime = item[curHost].time;
-					var now = Date.now();
-					if ((now - lastTime)/1000 > RENEWPURPOSE){
-						askPurpose(tabId);
-					}
-					else {
-						timeRemaining = item[curHost].timeRemaining;
-					}
-				}
-				timer = setInterval(quizPurpose, timeRemaining);
-			});
+					timer = setTimeout(function(){askPurpose(tabId)}, data.timeRemaining);
+				}	
+			}
 		}
 	});
 }
@@ -70,34 +64,29 @@ function checkLegality(tabId){
 function askPurpose(tabId){
 	browser.tabs.executeScript(tabId, {file: "jquery-3.2.1.min.js"}, function(){
 		browser.tabs.executeScript(tabId, {file: "jquery-ui.min.js"}, function(){
-			browser.tabs.executeScript(tabId, {file: "askPurpose.js"});
+			browser.tabs.executeScript(tabId, {file: "purpose.js"});
 		});
 	});
 }
 
-function quizPurpose(){
-	console.log('quiz');
-}
-
-/*
-restartAlarm: clear all alarms,
-then set a new alarm for the given tab.
-*/
-function restartAlarm(tabId) {
-	//browser.pageAction.hide(tabId);
-	browser.alarms.clearAll();
-	var gettingTab = browser.tabs.get(tabId);
-	gettingTab.then((tab) => {
-		browser.alarms.create("", {delayInMinutes: DELAY});
-	});
-}
-
-/*
-On alarm, show the page action.
-*/
-browser.alarms.onAlarm.addListener((alarm) => {
-	var gettingActiveTab = browser.tabs.query({active: true, currentWindow: true});
-	gettingActiveTab.then((tabs) => {
-		browser.pageAction.show(tabs[0].id);
-	});
-});
+chrome.runtime.onMessage.addListener(
+	function(request, sender, sendResponse) {
+		if (request.request == "instructions"){
+			var data = siteData[curHost];
+			if(typeof data === 'undefined' || (Date.now() - data.timeExited) > RENEWPURPOSE){
+				sendResponse({instructions: "Describe why you\'re on this site, using at least 40 characters."});
+			}
+			else{
+				var response = "Type your purpose 1 time(s):</p><p>" + data.purpose;
+				sendResponse({instructions: response});
+			}
+		}
+		else{
+			siteData[request.data.host] = request.data;
+			var gettingActiveTab = browser.tabs.query({active: true, currentWindow: true});
+			gettingActiveTab.then((tabs) => {
+				timer = setTimeout(function(){askPurpose(tabs[0].id)}, INTERVAL);
+			});
+		}
+	}
+);
