@@ -9,7 +9,7 @@ a minute.
 */ 
 const RENEWPURPOSE = 10000;
 const INTERVAL = 5000;
-var urls = ['twitter.com', 'spider.seds.org', 'www.facebook.com'];
+var urls = ['twitter.com', 'www.facebook.com', 'www.reddit.com'];
 var timer;
 var curHost;
 var siteData = {};

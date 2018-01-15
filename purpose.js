@@ -9,8 +9,10 @@ if (document.getElementById("dialog-form") == null){
 	document.body.appendChild(otherStyleRules);
 	var stylesheet = otherStyleRules.sheet;
 	stylesheet.insertRule(".ui-front{ z-index: 1001;}", 0);
-	stylesheet.insertRule(".ui-dialog{ z-index: 1002; margin-top: 150px}", 0);
+	stylesheet.insertRule("#purpose{ font: 12pt 'Arial';}", 0);
+	stylesheet.insertRule(".ui-dialog{ z-index: 1002; margin-top: 150px; font: 12pt 'Arial'}", 0);
 	stylesheet.insertRule(".validateTips{ width: 300px; word-break: break-word; white-space: normal}", 0);
+	stylesheet.insertRule(".ui-widget-overlay{ position: fixed}", 0);
 
 	browser.runtime.sendMessage({request: "type"}, function(response) {
 		var instructions = response.type == 'ask' ?
@@ -19,8 +21,10 @@ if (document.getElementById("dialog-form") == null){
 
 		var dialogHTML = '<div id="dialog-form" title="What\'re you doing here?">\
 					<p class="validateTips">' + instructions + '</p> \
+					<br>\
 					<form>\
-						<textarea style = "resize:none" id = "purpose" name="message" rows="5" cols="36" class="nopaste text ui-widget-content">The cat was playing in the garden.</textarea>\
+						<textarea style = "resize:none; font: 12pt \'Arial\'; width:auto;"\
+						 id = "purpose" name="message" rows="5" cols="36" class="nopaste text ui-widget-content">The cat was playing in the garden.</textarea>\
 						<!-- Allow form submission with keyboard without duplicating the dialog button -->\
 						<input type="submit" tabindex="-1" style="width:0px; position:absolute; top:-1000px">\
 					</form>\
