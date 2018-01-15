@@ -8,9 +8,9 @@ in the console, but the alarm will still go off after 6 seconds
 a minute.
 */ 
 const RENEWPURPOSE = 10000;
-const INTERVAL = 3000;
+const INTERVAL = 5000;
 var urls = ['twitter.com', 'spider.seds.org', 'www.facebook.com'];
-var timer, timer2;
+var timer;
 var curHost;
 var siteData = {};
 
@@ -28,18 +28,25 @@ gettingActiveTab.then((tabs) => {
 Restart alarm for the currently active tab, whenever a new tab becomes active.
 */
 browser.tabs.onActivated.addListener((activeInfo) => {
+	checkLegality(activeInfo.tabId);
+});
+
+browser.tabs.onUpdated.addListener((tabId, changeInfo, tab)=>{
+	if (changeInfo.url){
+		checkLegality(tabId);
+	}
+});
+
+function checkLegality(tabId){
 	clearInterval(timer);
-	clearInterval(timer2);
 	if(typeof siteData[curHost] !== 'undefined'){
 		var data = siteData[curHost];
 		data.timeExited = Date.now();
 		data.timeRemaining = INTERVAL - (data.timeExited - data.timeStarted);
-		console.log(data.timeRemaining);
+		if (data.timeRemaining < 0){
+			data.timeRemaining = 0;
+		}
 	}
-	checkLegality(activeInfo.tabId);
-});
-
-function checkLegality(tabId){
 	var gettingActiveTab = browser.tabs.get(tabId);
 	gettingActiveTab.then((tab) => {
 		var rootURL = new URL(tab.url);
@@ -71,18 +78,22 @@ function askPurpose(tabId){
 
 chrome.runtime.onMessage.addListener(
 	function(request, sender, sendResponse) {
-		if (request.request == "instructions"){
+		if (request.request == "type"){
 			var data = siteData[curHost];
 			if(typeof data === 'undefined' || (Date.now() - data.timeExited) > RENEWPURPOSE){
-				sendResponse({instructions: "Describe why you\'re on this site, using at least 40 characters."});
+				sendResponse({type: "ask"});
 			}
 			else{
-				var response = "Type your purpose 1 time(s):</p><p>" + data.purpose;
-				sendResponse({instructions: response});
+				sendResponse({type: data.purpose});
 			}
 		}
 		else{
-			siteData[request.data.host] = request.data;
+			if (typeof request.data === 'undefined'){
+				siteData[curHost].timeStarted = request.timeStarted;
+			}
+			else {
+				siteData[request.data.host] = request.data;
+			}
 			var gettingActiveTab = browser.tabs.query({active: true, currentWindow: true});
 			gettingActiveTab.then((tabs) => {
 				timer = setTimeout(function(){askPurpose(tabs[0].id)}, INTERVAL);

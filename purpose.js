@@ -8,12 +8,17 @@ if (document.getElementById("dialog-form") == null){
 	var otherStyleRules = document.createElement('style');
 	document.body.appendChild(otherStyleRules);
 	var stylesheet = otherStyleRules.sheet;
-	stylesheet.insertRule(".ui-front{ z-index: 1001;}", 0)
-	stylesheet.insertRule(".ui-dialog{ z-index: 1002; margin-top: 150px}", 0)
+	stylesheet.insertRule(".ui-front{ z-index: 1001;}", 0);
+	stylesheet.insertRule(".ui-dialog{ z-index: 1002; margin-top: 150px}", 0);
+	stylesheet.insertRule(".validateTips{ width: 300px; word-break: break-word; white-space: normal}", 0);
 
-	browser.runtime.sendMessage({request: "instructions"}, function(response) {
+	browser.runtime.sendMessage({request: "type"}, function(response) {
+		var instructions = response.type == 'ask' ?
+			"Describe why you\'re on this site, using at least 40 characters." :
+			"Retype your purpose to remind yourself to stay on track:</p><p class=\"validateTips\">" + response.type;
+
 		var dialogHTML = '<div id="dialog-form" title="What\'re you doing here?">\
-					<p class="validateTips">'+response.instructions+'</p> \
+					<p class="validateTips">' + instructions + '</p> \
 					<form>\
 						<textarea style = "resize:none" id = "purpose" name="message" rows="5" cols="36" class="nopaste text ui-widget-content">The cat was playing in the garden.</textarea>\
 						<!-- Allow form submission with keyboard without duplicating the dialog button -->\
@@ -38,30 +43,39 @@ if (document.getElementById("dialog-form") == null){
 				}, 500 );
 			}
 	 
-			function checkLength( o, min ) {
-				if (o.val().length < min ) {
-					o.addClass( "ui-state-error" );
-					updateTips( "Length of reason must be greater than " +
-						min + " characters." );
-					return false;
-				} else {
-					return true;
-				}
-			}
-	 
-			function addUser() {
+			function submitPurpose() {
 				allFields.removeClass( "ui-state-error" );
-				var valid = checkLength( purpose, 40 );
-	 
-				if ( valid ) {
-					var host = window.location.hostname;
-					var time = Date.now();
-					var data = {host: host, purpose: purpose.val(), timeStarted: time}
-					browser.runtime.sendMessage({data: data});
-					document.body.style.overflow = 'visible';
-					dialog.dialog( "close" );
+				if (response.type == 'ask'){
+					var min = 20;
+					if (purpose.val().length >= min) {
+						var host = window.location.hostname;
+						var time = Date.now();
+						var data = {host: host, purpose: purpose.val(), timeStarted: time}
+						browser.runtime.sendMessage({data: data});
+						document.body.style.overflow = 'visible';
+						dialog.dialog( "close" );
+						return true;
+					}
+					else {
+						purpose.addClass( "ui-state-error" );
+						updateTips( "Length of reason must be greater than " +
+							min + " characters." );
+						return false;
+					}
 				}
-				return valid;
+				else {
+					if (response.type.trim() == purpose.val().trim()){
+						var time = Date.now();				
+						browser.runtime.sendMessage({timeStarted: time});
+						document.body.style.overflow = 'visible';
+						dialog.dialog( "close" );
+						return true;
+					}
+					else {
+						purpose.addClass( "ui-state-error" );
+						return false;
+					}
+				}
 			}
 	 
 			dialog = $( "#dialog-form" ).dialog({
@@ -71,13 +85,13 @@ if (document.getElementById("dialog-form") == null){
 				},
 				autoOpen: true,
 				draggable: false,
-				height: 300,
+				height: 400,
 				width: 350,
 				modal: true,
 				position: {my: "top", at:"top", of: window },
 				resizable: false,
 				buttons: {
-					"Submit": addUser
+					"Submit": submitPurpose
 				},
 				close: function() {
 					form[ 0 ].reset();
@@ -90,7 +104,7 @@ if (document.getElementById("dialog-form") == null){
 	 
 			form = dialog.find( "form" ).on( "submit", function( event ) {
 				event.preventDefault();
-				addUser();
+				submitPurpose();
 			});
 			$('.nopaste').bind('cut copy paste', function (e) {
 				e.preventDefault(); //disable cut,copy,paste
