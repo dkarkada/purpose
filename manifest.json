@@ -1,11 +1,11 @@
 {
   "manifest_version": 2,
-  "name": "purpose",
+  "name": "Purpose",
   "version": "1.0",
   "description": "Stay focused by being reminded of your purpose on certain websites.",
   "homepage_url": "https://github.com/dkarkada/purpose",
   "icons": {
-    "48": "icons/chillout-48.png" //WRONG
+    "48": "icons/purpose48.png"
   },
 
   "permissions": [
@@ -19,10 +19,13 @@
   },
 
   "browser_action": {
-  	// "default_icon": {
-	  //   "16": "button/geo-16.png",
-	  //   "32": "button/geo-32.png"
-  	// },
-  	"default_title": "Purpose"
+    "browser_style": true,
+  	"default_icon": {
+	    "16": "icons/purpose16.png",
+	    "32": "icons/purpose32.png",
+      "48": "icons/purpose48.png"
+  	},
+  	"default_title": "Purpose",
+    "default_popup": "addPage.html"
   }
 }
