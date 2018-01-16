@@ -76,28 +76,32 @@ function askPurpose(tabId){
 	});
 }
 
-chrome.runtime.onMessage.addListener(
-	function(request, sender, sendResponse) {
-		if (request.request == "type"){
-			var data = siteData[curHost];
-			if(typeof data === 'undefined' || (Date.now() - data.timeExited) > RENEWPURPOSE){
-				sendResponse({type: "ask"});
-			}
-			else{
-				sendResponse({type: data.purpose});
-			}
+browser.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+	if (request.request == "type"){
+		var data = siteData[curHost];
+		if(typeof data === 'undefined' || (Date.now() - data.timeExited) > RENEWPURPOSE){
+			sendResponse({type: "ask"});
 		}
 		else{
-			if (typeof request.data === 'undefined'){
-				siteData[curHost].timeStarted = request.timeStarted;
-			}
-			else {
-				siteData[request.data.host] = request.data;
-			}
-			var gettingActiveTab = browser.tabs.query({active: true, currentWindow: true});
-			gettingActiveTab.then((tabs) => {
-				timer = setTimeout(function(){askPurpose(tabs[0].id)}, INTERVAL);
-			});
+			sendResponse({type: data.purpose});
 		}
 	}
-);
+	else{
+		if (typeof request.data === 'undefined'){
+			siteData[curHost].timeStarted = request.timeStarted;
+		}
+		else {
+			siteData[request.data.host] = request.data;
+		}
+		var gettingActiveTab = browser.tabs.query({active: true, currentWindow: true});
+		gettingActiveTab.then((tabs) => {
+			timer = setTimeout(function(){askPurpose(tabs[0].id)}, INTERVAL);
+		});
+	}
+});
+
+browser.browserAction.onClicked.addListener(function(){
+	if (urls.includes(curHost)){
+		
+	}
+});

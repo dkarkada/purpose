@@ -13,17 +13,16 @@
     "storage",
     "<all_urls>"
   ],
-  
-  "browser_action": {
-      "default_title": "Click Me"
-  },
 
   "background": {
     "scripts": ["background.js"]
   },
 
-  "web_accessible_resources": [
-    "askPurpose.js"
-  ]
-
+  "browser_action": {
+  	// "default_icon": {
+	  //   "16": "button/geo-16.png",
+	  //   "32": "button/geo-32.png"
+  	// },
+  	"default_title": "Purpose"
+  }
 }
